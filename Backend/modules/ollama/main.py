@@ -9,7 +9,7 @@ _client = AsyncClient()
 
 class ConversationManager:
     def __init__(self, max_size_bytes: int = 128000):
-        self.max_size_bytes = max_size_bytes
+        self.max_size_bytes = max_size_bytes*2
         self.conversations: Dict[str, Dict] = {}
 
     def calculate_size(self, conversation: Dict) -> int:
