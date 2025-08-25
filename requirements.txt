@@ -1,2 +1,4 @@
 ollama
 httpx
+pyttsx3
+SpeechRecognition
