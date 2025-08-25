@@ -17,13 +17,12 @@ class ConversationManager:
         return len(json.dumps(conversation, ensure_ascii=False).encode("utf-8"))
 
     def edit_system_message(self, conv_id: str, system_message: str):
-        conv = self.get_conversation(conv_id)
-        conv["system"] = {"role": "system", "content": system_message}
+        self.get_conversation(conv_id)["system"] = {"role": "system", "content": system_message}
 
     def get_conversation(self, conv_id: str, ollama: bool = False) -> Dict:
         if conv_id not in self.conversations:
             self.conversations[conv_id] = {
-                "system": {'role': 'system', 'content': "Your Instructions: You are a helpful and concise assistant. Always detect the user's language and answer in that language."},
+                "system": {'role': 'system', 'content': "You are a helpful and concise assistant. Detect the user's language from their request and always respond in the same language."},
                 "history": []
             }
         conv = self.conversations[conv_id]
