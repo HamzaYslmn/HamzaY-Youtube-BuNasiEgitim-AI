@@ -1,5 +1,5 @@
 ollama
 httpx
 gTTS
-playsound
+playsound3
 SpeechRecognition

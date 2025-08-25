@@ -62,7 +62,7 @@ async def mic_chat():
         ):
             print("Assistant:", content)
             content_dict = json.loads(content)
-            xTTS.speak(text=content_dict["answer"], lang=content_dict["lang"])
+            await xTTS.speak(text=content_dict["answer"], lang=content_dict["lang"])
 
 if __name__ == "__main__":
     asyncio.run(mic_chat())

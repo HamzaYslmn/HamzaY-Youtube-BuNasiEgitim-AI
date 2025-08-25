@@ -1,3 +1,4 @@
+
 import asyncio
 import uuid
 import base64
@@ -5,44 +6,62 @@ from typing import AsyncGenerator, Dict, List, Optional, Tuple, Union
 from ollama import AsyncClient
 import httpx
 import json
+import os
 
 _client = AsyncClient()
 
+CONV_DIR = os.path.join(os.path.dirname(__file__), "conversations")
+os.makedirs(CONV_DIR, exist_ok=True)
+
 class ConversationManager:
     def __init__(self, max_size_bytes: int = 128000):
-        self.max_size_bytes = max_size_bytes*5
-        self.conversations: Dict[str, Dict] = {}
+        self.max_size_bytes = max_size_bytes * 5
+
+    def _get_conv_path(self, conv_id: str) -> str:
+        return os.path.join(CONV_DIR, f"{conv_id}.json")
+
+    def _load_conversation(self, conv_id: str) -> Dict:
+        path = self._get_conv_path(conv_id)
+        if not os.path.exists(path):
+            return {
+                "system": {'role': 'system', 'content': "You are a helpful and concise assistant. Detect the user's language from their request and always respond in the same language."},
+                "history": []
+            }
+        with open(path, "r", encoding="utf-8") as f:
+            return json.load(f)
+
+    def _save_conversation(self, conv_id: str, conversation: Dict):
+        path = self._get_conv_path(conv_id)
+        with open(path, "w", encoding="utf-8") as f:
+            json.dump(conversation, f, ensure_ascii=False)
 
     def calculate_size(self, conversation: Dict) -> int:
         return len(json.dumps(conversation, ensure_ascii=False).encode("utf-8"))
 
     def edit_system_message(self, conv_id: str, system_message: str):
-        self.get_conversation(conv_id)["system"] = {"role": "system", "content": system_message}
+        conversation = self._load_conversation(conv_id)
+        conversation["system"] = {"role": "system", "content": system_message}
+        self._save_conversation(conv_id, conversation)
 
     def get_conversation(self, conv_id: str, ollama: bool = False) -> Dict:
-        if conv_id not in self.conversations:
-            self.conversations[conv_id] = {
-                "system": {'role': 'system', 'content': "You are a helpful and concise assistant. Detect the user's language from their request and always respond in the same language."},
-                "history": []
-            }
-        conv = self.conversations[conv_id]
+        conversation = self._load_conversation(conv_id)
         if not ollama:
-            return conv
+            return conversation
         else:
-            system_msg = conv.get("system")
+            system_msg = conversation.get("system")
             if isinstance(system_msg, dict):
                 sys_entry = system_msg
             else:
                 sys_entry = {"role": "system", "content": str(system_msg)}
-            return {"history": [sys_entry] + list(conv.get("history", []))}
-    
+            return {"history": [sys_entry] + list(conversation.get("history", []))}
+
     def add_conversation(self,
         conv_id: str,
         user_content: str,
         assistant_content: str,
         images: Optional[List[bytes]] = None,
     ):
-        conversation = self.conversations[conv_id]
+        conversation = self._load_conversation(conv_id)
         while (
             self.calculate_size(conversation) > self.max_size_bytes
             and len(conversation["history"]) > 2
@@ -54,6 +73,7 @@ class ConversationManager:
             user_entry["images"] = images
         conversation["history"].append(user_entry)
         conversation["history"].append({"role": "assistant", "content": assistant_content})
+        self._save_conversation(conv_id, conversation)
 
 
 _conv_manager = ConversationManager()
