@@ -122,41 +122,48 @@ async def chat(
     images_list = [image_bytes] if image_bytes else None
     _conv_manager.add_conversation(conv_id, message, full_response, images_list)
 
-async def interactive_chat():
-    conversation_id = None
-    instructions = None
-    print("""Chat started. 
-            Type 'exit' to quit,
-            'p,' to add a photo,
-            'i,' to add instructions.""")
-    
-    while True:
-        user_input = input("\nYou: ").strip()
-        if user_input.lower() == "exit":
-            break
-        image = None
-        if user_input.startswith("p,"):
-            user_input = user_input[2:].strip()
-            image = input("Photo URL or base64: ")
-        if user_input.startswith("i,"):
-            user_input = user_input[2:].strip()
-            instructions = input("Instructions: ")
-        print("Assistant: ", end="", flush=True)
-        async for content, conversation_id in chat(
-            user_input,
-            image=image,
-            conversation_id=conversation_id,
-            instructions=instructions
-        ):
-            print(content, end="", flush=True)
-        print()
-        conv = _conv_manager.get_conversation(conversation_id)
-        size = _conv_manager.calculate_size(conv)
-        print(f"\n[Conversations]: {conv}")
-        print(f"\n[Size]: {size} bytes")
-
 if __name__ == "__main__":
     try:
+        async def interactive_chat():
+            conversation_id = None
+            instructions = None
+            schema = {
+                "lang": {
+                    "type": "string",
+                    "enum": ["en", "tr"]
+                }
+            }
+            print("""Chat started. 
+                    Type 'exit' to quit,
+                    'p,' to add a photo,
+                    'i,' to add instructions.""")
+
+            while True:
+                user_input = input("\nYou: ").strip()
+                if user_input.lower() == "exit":
+                    break
+                image = None
+                if user_input.startswith("p,"):
+                    user_input = user_input[2:].strip()
+                    image = input("Photo URL or base64: ")
+                if user_input.startswith("i,"):
+                    user_input = user_input[2:].strip()
+                    instructions = input("Instructions: ")
+                print("Assistant: ", end="", flush=True)
+                async for content, conversation_id in chat(
+                    message=user_input,
+                    image=image,
+                    conversation_id=conversation_id,
+                    instructions=instructions,
+                    schema_props=schema,
+                ):
+                    print(content, end="", flush=True)
+                print()
+                conv = _conv_manager.get_conversation(conversation_id)
+                size = _conv_manager.calculate_size(conv)
+                print(f"\n[Conversations]: {conv}")
+                print(f"\n[Size]: {size} bytes")
+        
         asyncio.run(interactive_chat())
     except Exception as e:
         print(f"Error: {e}")
