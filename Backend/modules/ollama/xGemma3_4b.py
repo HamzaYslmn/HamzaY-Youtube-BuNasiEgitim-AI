@@ -148,10 +148,11 @@ if __name__ == "__main__":
             conversation_id = None
             instructions = None
             schema = {
-                "lang": {
-                    "type": "string",
-                    "enum": ["en", "tr"]
-                }
+              "lang": {
+                "type": "string",
+                "enum": ["en", "tr"],
+                "description": "Detected language"
+              }
             }
             print("""Chat started. 
                     Type 'exit' to quit,
