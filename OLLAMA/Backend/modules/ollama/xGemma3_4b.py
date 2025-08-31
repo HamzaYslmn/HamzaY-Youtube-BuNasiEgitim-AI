@@ -97,6 +97,9 @@ async def get_image_bytes(image_input: str) -> bytes:
             response = await client.get(image_input)
             response.raise_for_status()
             return response.content
+    if os.path.isfile(image_input):
+        with open(image_input, "rb") as img_file:
+            return img_file.read()
     if image_input.startswith("data:image"):
         image_input = image_input.split(",", 1)[-1]
     try:
