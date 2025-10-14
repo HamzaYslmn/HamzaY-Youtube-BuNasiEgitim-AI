@@ -1,0 +1,36 @@
+[project]
+name = "kumru"
+version = "0.1.0"
+description = "Add your description here"
+readme = "README.md"
+requires-python = ">=3.13"
+
+dependencies = [
+  "torch>=2.8.0",
+  "torchvision",
+  "torchaudio",
+  "transformers>=4.57.1",
+  "accelerate>=1.10.1",
+  "huggingface-hub[hf-xet]>=0.35.3",
+  "beautifulsoup4>=4.14.2",
+  "httpx>=0.28.1",
+  "dotenv>=0.9.9",
+  "pydoll-python>=2.9.0",
+  "playwright-stealth>=2.0.0",
+  "g4f>=0.6.4.0",
+  "rich>=14.2.0",
+]
+
+# CUDA 12.8 index for Windows
+[[tool.uv.index]]
+name = "pytorch-cu128"
+url = "https://download.pytorch.org/whl/cu128"
+explicit = true
+
+# Always use CUDA version for torch, torchvision, and torchaudio
+[tool.uv.sources]
+torch = [
+  { index = "pytorch-cu128" }
+]
+torchvision = [{ index = "pytorch-cu128" }]
+torchaudio = [{ index = "pytorch-cu128" }]
